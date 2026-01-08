@@ -8,8 +8,8 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
-import loginBackground from '@/assets/login-background.jpg';
 import abelovLogo from '@/assets/abelov-logo.png';
+const loginBackground = 'https://4kwallpapers.com/images/walls/thumbs_2t/24770.jpg';
 
 export default function LoginPage() {
   const navigate = useNavigate();
@@ -93,14 +93,14 @@ export default function LoginPage() {
 
   return (
     <div
-      className="min-h-screen flex items-center justify-center p-4 relative bg-cover bg-center bg-no-repeat"
+      className="min-h-screen flex items-center justify-center p-4 relative bg-cover bg-primary bg-center bg-no-repeat"
       style={{ backgroundImage: `url(${loginBackground})` }}
     >
       <div className="absolute inset-0"></div>
       <Card className="w-full max-w-md p-8 shadow-2xl relative z-10 bg-white/95 backdrop-blur">
         <div className="mb-8 text-center">
           <img src={abelovLogo} alt="Abelov Logo" className="w-20 rounded-full h-20 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-primary mb-2">Abelov Hub Records</h1>
+          <h1 className="text-3xl font-bold text-primary mb-2">Abelov IT ACADEMY</h1>
           <p className="text-muted-foreground">
             {isSignUp ? 'Create your account' : 'Welcome back'}
           </p>

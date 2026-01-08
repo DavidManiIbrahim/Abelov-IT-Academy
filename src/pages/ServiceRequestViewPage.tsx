@@ -200,7 +200,7 @@ export default function ServiceRequestViewPage() {
             </div>
           </div>
           <div className="flex gap-2 print-hide">
-            {/* Only show action buttons if logged in */}
+            {/* Only show action buttons if logged 66in */}
             {user && (
               <>
                 <Button variant="outline" onClick={handlePrint}>
