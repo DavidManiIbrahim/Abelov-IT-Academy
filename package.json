@@ -8,7 +8,10 @@
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "server": "npm run dev --prefix server",
+    "preview": "vite preview",
+    "convex:dev": "npx convex dev",
+    "dev:all": "npm run convex:dev & npm run dev"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
