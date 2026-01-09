@@ -11,8 +11,6 @@ import { toast } from '@/hooks/use-toast';
 import QRCode from 'react-qr-code';
 import abelovLogo from '@/assets/abelov-logo.png';
 
-
-
 export default function ServiceRequestViewPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -43,6 +41,32 @@ export default function ServiceRequestViewPage() {
     }
   }, [id, loadRequest]);
 
+  const getLabel = (field: string, category: string = 'Other') => {
+    if (category === 'Student') {
+      if (field === 'entity_name') return 'Student Name';
+      if (field === 'product_name') return 'Course / Program';
+      if (field === 'entry_date') return 'Registration Date';
+      if (field === 'specifications') return 'Duration / Level';
+      if (field === 'batch_sku') return 'Student ID / Reg No';
+      if (field === 'processing_fee') return 'Course Fee';
+    } else if (category === 'Internet') {
+      if (field === 'entity_name') return 'User Name';
+      if (field === 'product_name') return 'Service Type';
+      if (field === 'entry_date') return 'Date';
+      if (field === 'specifications') return 'Duration / Time Usage';
+      if (field === 'batch_sku') return 'Session ID';
+      if (field === 'processing_fee') return 'Usage Fee';
+    }
+    // Default
+    if (field === 'entity_name') return 'Source Entity / Name';
+    if (field === 'product_name') return 'Product / Item Name';
+    if (field === 'entry_date') return 'Entry Date';
+    if (field === 'specifications') return 'Specifications';
+    if (field === 'batch_sku') return 'Batch / SKU';
+    if (field === 'processing_fee') return 'Service Fee';
+    return '';
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -65,12 +89,14 @@ export default function ServiceRequestViewPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Verified':
+      case 'Completed':
         return 'bg-green-100 text-green-800';
       case 'Damaged':
         return 'bg-red-100 text-red-800';
       case 'Pending':
         return 'bg-yellow-100 text-yellow-800';
       case 'In-Transit':
+      case 'Active':
         return 'bg-blue-100 text-blue-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -78,7 +104,7 @@ export default function ServiceRequestViewPage() {
   };
 
   const DetailRow = ({ label, value }: { label: string; value: string | number | boolean }) => (
-    <div className="py-2">
+    <div className="py-2 border-b border-gray-100 last:border-0">
       <p className="text-xs font-medium text-muted-foreground">{label}</p>
       <p className="text-sm font-semibold text-primary">
         {typeof value === 'boolean' ? (value ? 'Yes' : 'No') : value || '-'}
@@ -87,133 +113,43 @@ export default function ServiceRequestViewPage() {
   );
 
   const handlePrint = () => {
-    if (!printRef.current) return;
     window.print();
   };
+
+  const category = request.product_category || 'Other';
 
   return (
     <div className="min-h-screen bg-background p-4 md:p-8">
       <style>{`
-  @media print {
-    /* 1. LAYOUT RESET - CRITICAL FIX */
-    /* Forces the content to flow naturally from the top, disabling screen centering */
-    html, body, #root, .min-h-screen {
-      width: 100% !important;
-      height: auto !important;
-      min-height: 0 !important;
-      display: block !important;
-      position: static !important;
-      overflow: visible !important;
-    }
+        @media print {
+            body { background: white; -webkit-print-color-adjust: exact; }
+            .print-hide { display: none !important; }
+            .print-card { box-shadow: none !important; border: none !important; }
+            @page { margin: 0.5cm; }
+        }
+      `}</style>
 
-    @page {
-      size: auto; /* Let the printer determine size, or use 8.5in 11in */
-      margin: 0mm; /* Remove browser header/footer text */
-    }
-
-    body {
-      margin: 0 !important;
-      padding: 0.5cm !important; /* Add slight padding so text doesn't hit edge */
-      background: white;
-    }
-
-    /* Reset all elements to avoid hidden margins */
-    * {
-      margin: 0 !important;
-      padding: 0 !important;
-      box-sizing: border-box !important;
-    }
-
-    /* 2. TYPOGRAPHY SCALING */
-    /* Adjusted sizes to be more reasonable for paper (36px is very large for print body text) */
-    h1 {
-      font-size: 24pt !important;
-      margin-bottom: 8pt !important;
-      font-weight: 800 !important;
-      color: #000 !important;
-    }
-    h2, h3 {
-      font-size: 18pt !important;
-      margin-top: 12pt !important;
-      margin-bottom: 6pt !important;
-      font-weight: 700 !important;
-      color: #000 !important;
-    }
-    p, .text-sm, .text-xs, span, div {
-      font-size: 11pt !important; /* Standard readable print size */
-      line-height: 1.4 !important;
-      color: #000 !important;
-    }
-    
-    /* 3. VISIBILITY CONTROLS */
-    .print-hide {
-      display: none !important;
-    }
-    .print-show {
-      display: block !important;
-    }
-    
-    /* 4. CARD STYLING REMOVAL */
-    /* Flattens the card look for paper */
-    .print-content {
-      width: 100% !important;
-      max-width: none !important;
-      box-shadow: none !important;
-      border: none !important;
-      margin: 0 !important;
-    }
-    
-    /* Target the Card component specifically if it has a border */
-    .rounded-xl, .border, .shadow-sm {
-      border: none !important;
-      box-shadow: none !important;
-      border-radius: 0 !important;
-    }
-
-    /* 5. GRID & LAYOUT FIXES */
-    .grid {
-      display: grid !important;
-      grid-template-columns: repeat(2, 1fr) !important; /* Force 2 columns for data */
-      gap: 12pt !important;
-    }
-    /* Stack small grids if needed */
-    .md\\:grid-cols-4 {
-      grid-template-columns: repeat(2, 1fr) !important;
-    }
-      
-
-    /* Avoid breaking elements in half across pages */
-    .print-section-break {
-      page-break-inside: avoid;
-      margin-bottom: 16pt !important;
-    }
-  }
-`}</style>
       <div className="max-w-4xl mx-auto">
         {/* Header - Hide on Print */}
         <div className="print-hide mb-8 flex items-center justify-between">
-          <div className="flex items-center gap-4 rounded-full">
-            <img src={abelovLogo} alt="Abelov Logo" className="w-16 h-16" />
+          <div className="flex items-center gap-4">
+            <img src={abelovLogo} alt="Abelov Logo" className="w-16 h-16 rounded-full" />
             <div>
-              <h1 className="text-4xl font-bold text-primary mb-2">Product Details</h1>
-              <p className="text-muted-foreground">Product ID: {request.id}</p>
+              <h1 className="text-2xl font-bold text-primary">Record Details</h1>
+              <p className="text-muted-foreground">ID: {request.id}</p>
             </div>
           </div>
           <div className="flex gap-2 print-hide">
-            {/* Only show action buttons if logged 66in */}
             {user && (
               <>
                 <Button variant="outline" onClick={handlePrint}>
-                  <Printer className="w-4 h-4 mr-2" />
-                  Print
+                  <Printer className="w-4 h-4 mr-2" /> Print
                 </Button>
                 <Button onClick={() => navigate(`/edit/${request.id}`)}>
-                  <Edit className="w-4 h-4 mr-2" />
-                  Edit
+                  <Edit className="w-4 h-4 mr-2" /> Edit
                 </Button>
                 <Button variant="outline" onClick={() => navigate('/dashboard')}>
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back
+                  <ArrowLeft className="w-4 h-4 mr-2" /> Back
                 </Button>
               </>
             )}
@@ -221,182 +157,75 @@ export default function ServiceRequestViewPage() {
         </div>
 
         {/* Printable Content */}
-        <div ref={printRef} className="print-content">
+        <div ref={printRef} className="print-card bg-white">
           {/* Print Header */}
-
-          <div className="print-show mb-6 text-center hidden">
-            <h1 className="text-2xl font-bold mb-1">Abelov IT Academy</h1>
-            <p className="text-sm text-muted-foreground">Product Verification Report</p>
-            <hr className="my-4" />
+          <div className="hidden print:block text-center mb-6">
+            <h1 className="text-3xl font-bold">Abelov IT Academy</h1>
+            <p className="text-gray-500">Record Verification</p>
           </div>
 
-          {/* Status Badge */}
-          <div className="mb-4">
-            <Badge className={getStatusColor(request.status)}>{request.status}</Badge>
-          </div>
-
-          {/* Unified Form - All Sections in One */}
-          <Card className="p-6">
-            {/* Request Header */}
-            <div className="mb-6 pb-6 border-b">
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div>
-                  <DetailRow label="Record ID" value={request.id} />
-                </div>
-                <div>
-                  <DetailRow label="Entry Date" value={new Date(request.entry_date).toLocaleDateString()} />
-                </div>
-                <div>
-                  <DetailRow label="Status" value={request.status} />
-                </div>
-                <div>
-                  <DetailRow label="Recorded By" value={request.recorder_name} />
-                </div>
+          <Card className="p-6 print-card">
+            <div className="flex justify-between items-start mb-6 pb-6 border-b">
+              <div>
+                <Badge className={`mb-2 ${getStatusColor(request.status)}`}>{request.status}</Badge>
+                <h2 className="text-2xl font-bold">{request.entity_name}</h2>
+                <p className="text-gray-500">{getLabel('entity_name', category)}</p>
+              </div>
+              <div className="text-right">
+                <p className="text-sm text-gray-500">Recorded on</p>
+                <p className="font-semibold">{new Date(request.entry_date).toLocaleDateString()}</p>
               </div>
             </div>
 
-            {/* Product Photo */}
-            {/* @ts-ignore */}
-            {request.product_photo && (
-              <div className="mb-6 pb-6 border-b print-section-break">
-                <h3 className="text-lg font-semibold mb-3 text-primary">Product Photo</h3>
-                <div className="flex justify-center">
-                  {/* @ts-ignore */}
-                  <img src={request.product_photo} alt="Product" className="max-w-full h-auto rounded-lg shadow-sm border" style={{ maxHeight: '400px' }} />
-                </div>
-              </div>
-            )}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Left Column: Details */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 border-b pb-2">Information</h3>
+                <DetailRow label={getLabel('product_name', category)} value={request.product_name} />
+                <DetailRow label={getLabel('specifications', category)} value={request.specifications} />
+                <DetailRow label={getLabel('batch_sku', category)} value={request.batch_sku} />
 
-            {/* Product Information */}
-            <div className="mb-6 pb-6 border-b print-section-break">
-              <h3 className="text-lg font-semibold mb-3 text-primary">Product Information</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <DetailRow label="Product Name" value={request.product_name} />
-                </div>
-                <div>
-                  <DetailRow label="Batch / Lot Number" value={request.batch_sku} />
-                </div>
-                <div>
-                  <DetailRow label="Serial Number / Asset Tag" value={request.serial_number} />
-                </div>
+                {request.product_photo && (
+                  <div className="mt-4">
+                    <p className="text-xs font-medium text-muted-foreground mb-2">Photo / ID</p>
+                    <img src={request.product_photo} alt="Record" className="rounded-lg max-h-48 border shadow-sm" />
+                  </div>
+                )}
+
                 {request.accessories_notes && (
-                  <div className="md:col-span-3">
-                    <DetailRow label="Included Materials / Notes" value={request.accessories_notes} />
+                  <div className="mt-4">
+                    <p className="text-xs font-medium text-muted-foreground mb-1">Notes</p>
+                    <p className="text-sm bg-gray-50 p-2 rounded">{request.accessories_notes}</p>
                   </div>
                 )}
               </div>
-            </div>
 
-            {/* Quality Check & Verification */}
-            {(request.quality_check || request.action_taken) && (
-              <div className="mb-6 pb-6 border-b print-section-break">
-                <h3 className="text-lg font-semibold mb-3 text-primary">Quality Check & Verification</h3>
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  {request.verification_date && (
-                    <div>
-                      <DetailRow label="QC Date" value={new Date(request.verification_date).toLocaleDateString()} />
-                    </div>
-                  )}
-                  {request.verification_staff && (
-                    <div>
-                      <DetailRow label="QC Technician" value={request.verification_staff} />
-                    </div>
-                  )}
-                </div>
-                {request.quality_check && (
-                  <div className="mb-3">
-                    <p className="text-xs font-medium text-muted-foreground">Quality Check Report</p>
-                    <p className="text-sm whitespace-pre-wrap">{request.quality_check}</p>
-                  </div>
+              {/* Right Column: Financials & Verification */}
+              <div>
+                <h3 className="text-lg font-semibold mb-3 border-b pb-2">Financials</h3>
+                <DetailRow label={getLabel('processing_fee', category)} value={`₦${request.processing_fee?.toFixed(2) || '0.00'}`} />
+                {request.additional_cost > 0 && (
+                  <DetailRow label="Additional Cost" value={`₦${request.additional_cost?.toFixed(2) || '0.00'}`} />
                 )}
-                {request.action_taken && (
-                  <div>
-                    <p className="text-xs font-medium text-muted-foreground">Corrective Actions Taken</p>
-                    <p className="text-sm whitespace-pre-wrap">{request.action_taken}</p>
+                <DetailRow label="Amount Paid" value={`₦${request.amount_paid?.toFixed(2) || '0.00'}`} />
+
+                <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+                  <p className="text-sm font-medium text-gray-500">Balance Due</p>
+                  <p className={`text-2xl font-bold ${request.balance > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                    ₦{request.balance?.toFixed(2) || '0.00'}
+                  </p>
+                </div>
+
+                <div className="mt-8 pt-6 border-t print:hidden">
+                  <h3 className="text-lg font-semibold mb-3">Verification</h3>
+                  <div className="flex justify-center p-4 bg-white border rounded-lg">
+                    <QRCode value={window.location.href} size={100} />
                   </div>
-                )}
-              </div>
-            )}
-
-            {/* Pricing Summary */}
-            <div className="mb-6 pb-6 border-b print-section-break">
-              <h3 className="text-lg font-semibold mb-3 text-primary">Pricing & Logistics Summary</h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <DetailRow label="Hub Processing Fee" value={`₦${request.processing_fee.toFixed(2)}`} />
+                  <p className="text-center text-xs text-gray-400 mt-2">Scan to verify record</p>
                 </div>
-                <div>
-                  <DetailRow label="Logistics / Add. Cost" value={`₦${request.additional_cost.toFixed(2)}`} />
-                </div>
-                <div>
-                  <DetailRow label="Total Value" value={`₦${request.total_value.toFixed(2)}`} />
-                </div>
-                <div>
-                  <DetailRow label="Amount Paid / Deposit" value={`₦${request.amount_paid.toFixed(2)}`} />
-                </div>
-                <div>
-                  <DetailRow label="Balance Due" value={`₦${request.balance.toFixed(2)}`} />
-                </div>
-                <div>
-                  <DetailRow label="Transaction Status" value={request.transaction_completed ? 'Finalized' : 'Pending'} />
-                </div>
-              </div>
-            </div>
-
-            {/* Confirmation */}
-            {request.verification_confirmation && (
-              <div className="pb-6 print-section-break">
-                <h3 className="text-lg font-semibold mb-3 text-primary">Verification Confirmation</h3>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <DetailRow label="Verified & Authorized" value={request.verification_confirmation.verified} />
-                  </div>
-                  <div>
-                    <DetailRow label="Authorizing Officer" value={request.verification_confirmation.verifier_name} />
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Timestamps - Hide on Print */}
-            <div className="print-hide text-xs text-muted-foreground mt-6 pt-4 border-t">
-              <p>Entry Created: {new Date(request.created_at).toLocaleString()}</p>
-              <p>Last Updated: {new Date(request.updated_at).toLocaleString()}</p>
-            </div>
-
-            {/* QR Code */}
-            <div className="mt-6 pt-4 border-t text-center">
-              <div className="flex flex-col items-center">
-                <p className="text-xs text-muted-foreground mb-2">Verification QR Code</p>
-                <QRCode
-                  value={window.location.href}
-                  size={128}
-                />
               </div>
             </div>
           </Card>
-        </div>
-
-        {/* Action Buttons - Hide on Print */}
-        {/* Action Buttons - Mobile */}
-        <div className="md:hidden flex flex-col gap-2 mt-6 print-hide">
-          {user && (
-            <>
-              <Button variant="outline" onClick={handlePrint} className="w-full">
-                <Printer className="w-4 h-4 mr-2" />
-                Print
-              </Button>
-              <Button onClick={() => navigate(`/edit/${request.id}`)} className="w-full">
-                <Edit className="w-4 h-4 mr-2" />
-                Edit
-              </Button>
-              <Button variant="outline" onClick={() => navigate('/dashboard')} className="w-full">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </Button>
-            </>
-          )}
         </div>
       </div>
     </div>

@@ -2,13 +2,14 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { usePersistentState } from '@/hooks/usePersistentState';
 import { Card } from '@/components/ui/card';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useAuth } from '@/contexts/AuthContext';
 import { serviceRequestAPI, adminAPI } from '@/lib/api';
 import { HubRecord } from '@/types/database';
-import { Plus, Search, Edit, Eye, Trash2, BarChart3, Shield } from 'lucide-react';
+import { Plus, Search, Edit, Eye, Trash2, BarChart3, Shield, GraduationCap, Wifi, Package } from 'lucide-react';
 import ProfileMenu from '@/components/ProfileMenu';
 import abelovLogo from '@/assets/abelov-logo.png';
 
@@ -23,6 +24,7 @@ export default function DashboardPage() {
   const [requests, setRequests] = useState<HubRecord[]>([]);
   const [filteredRequests, setFilteredRequests] = useState<HubRecord[]>([]);
   const [searchQuery, setSearchQuery] = usePersistentState('dashboard_search', '');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     total: 0,
@@ -38,42 +40,34 @@ export default function DashboardPage() {
     if (!user?.id) return;
     setLoading(true);
     try {
-      const [data, statsData] = await Promise.all([
-        adminAPI.getAllServiceRequests(100, 0),
-        adminAPI.getGlobalStats(),
+      const [requestsData, statsData] = await Promise.all([
+        serviceRequestAPI.getByUserId(user.id),
+        serviceRequestAPI.getStats(user.id),
       ]);
-      setRequests(data.records || []);
-      setFilteredRequests(data.records || []);
+      setRequests(requestsData || []);
+      setFilteredRequests(requestsData || []);
 
       // Map global stats to expected format
       setStats({
-        total: statsData.totalTickets || 0,
-        sold: statsData.soldTickets || 0,
-        verified: statsData.completedTickets || 0,
-        pending: statsData.pendingTickets || 0,
-        inTransit: statsData.inProgressTickets || 0,
-        damaged: statsData.onHoldTickets || 0,
+        total: statsData.total || 0,
+        sold: statsData.completed || 0, // Using completed as sold/finished
         totalRevenue: statsData.totalRevenue || 0,
       });
     } catch (error) {
       console.error('Error loading requests:', error);
       // Fallback: try to load just requests if stats fail
       try {
-        const data = await adminAPI.getAllServiceRequests(100, 0);
-        setRequests(data.records || []);
-        setFilteredRequests(data.records || []);
+        const data = await serviceRequestAPI.getByUserId(user.id);
+        setRequests(data || []);
+        setFilteredRequests(data || []);
 
         // Try to get global stats as fallback
         try {
-          const globalStats = await adminAPI.getGlobalStats();
+          const stats = await serviceRequestAPI.getStats(user.id);
           setStats({
-            total: globalStats.totalTickets || 0,
-            sold: globalStats.soldTickets || 0,
-            verified: globalStats.completedTickets || 0,
-            pending: globalStats.pendingTickets || 0,
-            inTransit: globalStats.inProgressTickets || 0,
-            damaged: globalStats.onHoldTickets || 0,
-            totalRevenue: globalStats.totalRevenue || 0,
+            total: stats.total || 0,
+            sold: stats.completed || 0,
+            totalRevenue: stats.totalRevenue || 0,
           });
         } catch {
           // Calculate stats locally from loaded requests as last resort
@@ -145,8 +139,8 @@ export default function DashboardPage() {
       setFilteredRequests(requests);
     } else {
       try {
-        const results = await adminAPI.searchRequests(query, 100, 0);
-        setFilteredRequests(results.records || []);
+        const results = await serviceRequestAPI.search(user.id, query);
+        setFilteredRequests(results || []);
       } catch (error) {
         console.error('Error searching:', error);
       }
@@ -167,8 +161,10 @@ export default function DashboardPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'Verified':
+      case 'Completed':
         return 'bg-green-100 text-green-800';
       case 'In-Transit':
+      case 'Active':
         return 'bg-blue-100 text-blue-800';
       case 'Pending':
         return 'bg-yellow-100 text-yellow-800';
@@ -254,11 +250,11 @@ export default function DashboardPage() {
               className="pl-10"
             />
           </div>
-          <Button onClick={() => navigate('/')} size="lg" className="md:flex hidden">
+          <Button onClick={() => setIsAddModalOpen(true)} size="lg" className="md:flex hidden">
             <Plus className="w-4 h-4 mr-2" />
-            Add New Product
+            Add Request
           </Button>
-          <Button onClick={() => navigate('/')} size="lg" className="md:hidden">
+          <Button onClick={() => setIsAddModalOpen(true)} size="lg" className="md:hidden">
             <Plus className="w-4 h-4" />
           </Button>
         </div>
@@ -276,9 +272,9 @@ export default function DashboardPage() {
             <p className="text-muted-foreground mb-6">
               {searchQuery ? 'Try adjusting your search query.' : 'Add your first product to get started.'}
             </p>
-            <Button onClick={() => navigate('/')}>
+            <Button onClick={() => setIsAddModalOpen(true)}>
               <Plus className="w-4 h-4 mr-2" />
-              Add New Product
+              Add Request
             </Button>
           </Card>
         ) : (
@@ -362,6 +358,49 @@ export default function DashboardPage() {
           </div>
         )}
       </div>
-    </div>
+
+
+      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Select Request Type</DialogTitle>
+            <DialogDescription>
+              Choose the type of record you want to create.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 gap-4 py-4">
+            <Button
+              variant="outline"
+              className="h-20 justify-start px-6 hover:bg-blue-50 hover:text-blue-700 hover:border-blue-200 transition-all group"
+              onClick={() => navigate('/?type=Student')}
+            >
+              <div className="bg-blue-100 p-2 rounded-full mr-4 group-hover:bg-blue-200">
+                <GraduationCap className="h-6 w-6 text-blue-600" />
+              </div>
+              <div className="text-left">
+                <div className="font-semibold">Student Registration</div>
+                <div className="text-xs text-muted-foreground">Register new student</div>
+              </div>
+            </Button>
+
+            <Button
+              variant="outline"
+              className="h-20 justify-start px-6 hover:bg-green-50 hover:text-green-700 hover:border-green-200 transition-all group"
+              onClick={() => navigate('/?type=Internet')}
+            >
+              <div className="bg-green-100 p-2 rounded-full mr-4 group-hover:bg-green-200">
+                <Wifi className="h-6 w-6 text-green-600" />
+              </div>
+              <div className="text-left">
+                <div className="font-semibold">Internet User</div>
+                <div className="text-xs text-muted-foreground">Track internet usage time</div>
+              </div>
+            </Button>
+
+
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div >
   );
 }

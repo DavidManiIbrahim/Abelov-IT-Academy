@@ -66,7 +66,7 @@ export default defineSchema({
             verified: v.boolean(),
             verifier_name: v.optional(v.string()),
         }),
-        product_photo: v.optional(v.string()),
+        product_photo: v.optional(v.union(v.string(), v.null())),
     })
         .index("by_user", ["user_id"])
         .index("by_status", ["status"])

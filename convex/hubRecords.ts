@@ -18,7 +18,9 @@ export const createRecord = mutation({
             v.literal("Electronics"),
             v.literal("Consumer Goods"),
             v.literal("Industrial"),
-            v.literal("Other")
+            v.literal("Other"),
+            v.literal("Student"),
+            v.literal("Internet")
         ),
         batch_sku: v.optional(v.string()),
         serial_number: v.optional(v.string()),
@@ -36,7 +38,9 @@ export const createRecord = mutation({
             v.literal("Received"),
             v.literal("Verified"),
             v.literal("Sold"),
-            v.literal("Damaged")
+            v.literal("Damaged"),
+            v.literal("Active"),
+            v.literal("Completed")
         ),
         processing_fee: v.number(),
         additional_cost: v.number(),
@@ -57,7 +61,7 @@ export const createRecord = mutation({
             verified: v.boolean(),
             verifier_name: v.optional(v.string()),
         }),
-        product_photo: v.optional(v.string()),
+        product_photo: v.optional(v.union(v.string(), v.null())),
     },
     handler: async (ctx, args) => {
         const recordId = await ctx.db.insert("hubRecords", args);
@@ -123,7 +127,9 @@ export const updateRecord = mutation({
                 v.literal("Electronics"),
                 v.literal("Consumer Goods"),
                 v.literal("Industrial"),
-                v.literal("Other")
+                v.literal("Other"),
+                v.literal("Student"),
+                v.literal("Internet")
             )
         ),
         batch_sku: v.optional(v.string()),
@@ -143,7 +149,9 @@ export const updateRecord = mutation({
                 v.literal("Received"),
                 v.literal("Verified"),
                 v.literal("Sold"),
-                v.literal("Damaged")
+                v.literal("Damaged"),
+                v.literal("Active"),
+                v.literal("Completed")
             )
         ),
         processing_fee: v.optional(v.number()),
@@ -169,7 +177,7 @@ export const updateRecord = mutation({
                 verifier_name: v.optional(v.string()),
             })
         ),
-        product_photo: v.optional(v.string()),
+        product_photo: v.optional(v.union(v.string(), v.null())),
     },
     handler: async (ctx, args) => {
         const { recordId, ...updates } = args;
@@ -240,7 +248,9 @@ export const getRecordsByStatus = query({
             v.literal("Received"),
             v.literal("Verified"),
             v.literal("Sold"),
-            v.literal("Damaged")
+            v.literal("Damaged"),
+            v.literal("Active"),
+            v.literal("Completed")
         ),
     },
     handler: async (ctx, args) => {
@@ -273,11 +283,11 @@ export const getStats = query({
 
         const totalRecords = records.length;
         const completedRecords = records.filter(
-            (r) => r.status === "Verified" || r.status === "Sold"
+            (r) => r.status === "Verified" || r.status === "Sold" || r.status === "Completed"
         ).length;
         const pendingRecords = records.filter((r) => r.status === "Pending").length;
         const inTransitRecords = records.filter(
-            (r) => r.status === "In-Transit"
+            (r) => r.status === "In-Transit" || r.status === "Active"
         ).length;
         const totalRevenue = records.reduce((sum, r) => sum + r.amount_paid, 0);
         const outstandingBalance = records.reduce((sum, r) => sum + r.balance, 0);

@@ -1,5 +1,5 @@
-export type RecordCategory = "Electronics" | "Consumer Goods" | "Industrial" | "Other";
-export type RecordStatus = "Pending" | "In-Transit" | "Received" | "Verified" | "Sold" | "Damaged";
+export type RecordCategory = "Electronics" | "Consumer Goods" | "Industrial" | "Other" | "Student" | "Internet";
+export type RecordStatus = "Pending" | "In-Transit" | "Received" | "Verified" | "Sold" | "Damaged" | "Active" | "Completed";
 
 export interface LogTimelineStep {
   step: string;

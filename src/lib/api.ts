@@ -224,6 +224,7 @@ export const adminAPI = {
     return {
       totalUsers: 0,
       totalTickets: 0,
+      soldTickets: 0,
       pendingTickets: 0,
       completedTickets: 0,
       inProgressTickets: 0,
