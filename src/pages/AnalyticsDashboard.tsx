@@ -7,6 +7,7 @@ import { serviceRequestAPI } from '@/lib/api';
 import { HubRecord } from '@/types/database';
 import { ArrowLeft, TrendingUp, DollarSign, Clock, CheckCircle } from 'lucide-react';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import abelovLogo from '@/assets/abelov-logo.png';
 
 export default function AnalyticsDashboard() {
@@ -116,12 +117,15 @@ export default function AnalyticsDashboard() {
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-4">
           <div className="flex items-center gap-4 mb-2">
             <img src={abelovLogo} alt="Abelov Logo" className="w-10 h-10" />
-            <h1 className="text-2xl font-bold text-primary">Analytics Dashboard</h1>
+            <h1 className="text-2xl font-bold text-primary dark:text-black">Analytics Dashboard</h1>
           </div>
-          <Button onClick={() => navigate('/dashboard')} variant="ghost" size="sm">
+          <Button onClick={() => navigate('/dashboard')} className="dark:text-black dark:hover:text-white" variant="ghost" size="sm">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>
+          <div className="ml-2 inline-flex">
+            <ThemeToggle />
+          </div>
         </div>
       </div>
 
@@ -163,35 +167,6 @@ export default function AnalyticsDashboard() {
           </ResponsiveContainer>
         </Card>
 
-        <div className="grid grid-cols-1 gap-8">
-          {/* Device Type Breakdown */}
-          <Card className="p-6">
-            <h2 className="text-xl font-bold mb-4 text-primary">Product Breakdown</h2>
-            <ResponsiveContainer width="100%" height={300}>
-              <PieChart>
-                <Pie
-                  data={deviceBreakdown}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ device, percent }) => `${device}: ${(percent * 100).toFixed(0)}%`}
-                  outerRadius={100}
-                  fill="#8884d8"
-                  dataKey="count"
-                >
-                  {deviceBreakdown.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                  ))}
-                </Pie>
-                <Tooltip />
-              </PieChart>
-            </ResponsiveContainer>
-          </Card>
-
-
-        </div>
-
-        {/* Technician Work Histogram */}
 
       </div>
     </div>

@@ -12,7 +12,7 @@ interface AuthContextType {
   userRoles: string[];
   isAdmin: boolean;
   signUp: (email: string, password: string, userType?: 'user' | 'admin') => Promise<void>;
-  signIn: (email: string, password: string) => Promise<void>;
+  signIn: (email: string, password: string) => Promise<User>;
   signOut: () => Promise<void>;
 }
 
@@ -176,6 +176,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       // Save to localStorage for persistence
       localStorage.setItem('auth_token', result.token);
       saveSessionToStorage(sessionData, userData, roles);
+      return userData;
     } catch (err) {
       await authAPI.logout();
       throw err;

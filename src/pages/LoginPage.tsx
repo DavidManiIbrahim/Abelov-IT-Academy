@@ -71,12 +71,14 @@ export default function LoginPage() {
           return;
         }
 
-        await signIn(formData.email, formData.password);
-        toast({
-          title: 'Success',
-          description: 'Logged in successfully',
-        });
-        navigate('/dashboard');
+        const loggedInUser = await signIn(formData.email, formData.password);
+
+        // Redirect based on role
+        if (loggedInUser?.roles?.includes('admin')) {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (error: Error | unknown) {
       const errorMsg = error instanceof Error ? error.message : 'Authentication failed';
@@ -100,14 +102,14 @@ export default function LoginPage() {
       <Card className="w-full max-w-md p-8 shadow-2xl relative z-10 bg-white/95 backdrop-blur">
         <div className="mb-8 text-center">
           <img src={abelovLogo} alt="Abelov Logo" className="w-20 rounded-full h-20 mx-auto mb-4" />
-          <h1 className="text-3xl font-bold text-primary mb-2">Abelov IT Academy</h1>
+          <h1 className="text-3xl font-bold text-primary mb-2 dark:text-black">Abelov IT Academy</h1>
           <p className="text-muted-foreground">
             {isSignUp ? 'Create your account' : 'Welcome back'}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
+          <div className='dark:text-black'>
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
@@ -119,7 +121,7 @@ export default function LoginPage() {
             />
           </div>
 
-          <div>
+          <div className='dark:text-black'>
             <Label htmlFor="password">Password</Label>
             <Input
               id="password"
@@ -133,13 +135,13 @@ export default function LoginPage() {
 
           {isSignUp && (
             <>
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 dark:bg-gray-800">
                 <Label className="text-base font-semibold mb-3 block">Account Type</Label>
                 <RadioGroup value={userType} onValueChange={(val) => setUserType(val as 'user' | 'admin')}>
                   <div className="flex items-center space-x-2 mb-3">
                     <RadioGroupItem value="user" id="user-type" />
                     <Label htmlFor="user-type" className="font-normal cursor-pointer">
-                      <span className="font-semibold">Regular User (Sales)</span>
+                      <span className="font-semibold">Staff</span>
                       <p className="text-xs text-muted-foreground mt-1">Manage your own service requests and tickets</p>
                     </Label>
                   </div>
@@ -166,7 +168,7 @@ export default function LoginPage() {
             </>
           )}
 
-          <Button type="submit" className="w-full" disabled={isLoading}>
+          <Button type="submit" className="w-full border border-black" disabled={isLoading}>
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -178,7 +180,7 @@ export default function LoginPage() {
           </Button>
         </form>
 
-        <div className="mt-6">
+        <div className="mt-6 dark:text-black">
           <button
             type="button"
             onClick={() => {
@@ -186,7 +188,7 @@ export default function LoginPage() {
               setUserType('user');
               setFormData({ email: '', password: '', confirmPassword: '' });
             }}
-            className="w-full text-sm text-primary hover:underline"
+            className="w-full text-sm text-primary hover:underline dark:text-black"
           >
             {isSignUp ? 'Already have an account? Login' : "Don't have an account? Sign up"}
           </button>

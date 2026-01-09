@@ -11,6 +11,7 @@ import { Loader2, LogOut, Home, Users, Ticket, Activity, TrendingUp, Trash2 } fr
 import { useAuth } from '@/contexts/AuthContext';
 import { adminAPI } from '@/lib/api';
 import { toast } from '@/hooks/use-toast';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import abelovLogo from '@/assets/abelov-logo.png';
 
 
@@ -215,6 +216,7 @@ export default function AdminDashboard() {
             <Button onClick={handleLogout} variant="outline" className="md:hidden">
               <LogOut className="w-4 h-4" />
             </Button>
+            <ThemeToggle />
           </div>
         </div>
       </div>

@@ -11,6 +11,7 @@ import { serviceRequestAPI, adminAPI } from '@/lib/api';
 import { HubRecord } from '@/types/database';
 import { Plus, Search, Edit, Eye, Trash2, BarChart3, Shield, GraduationCap, Wifi, Package } from 'lucide-react';
 import ProfileMenu from '@/components/ProfileMenu';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import abelovLogo from '@/assets/abelov-logo.png';
 
 export default function DashboardPage() {
@@ -191,7 +192,7 @@ export default function DashboardPage() {
           <div className="flex items-center gap-4">
             <img src={abelovLogo} alt="Abelov Logo" className="w-12 rounded-3xl h-12" />
             <div>
-              <h1 className="text-2xl font-bold text-primary">Abelov IT Academy</h1>
+              <h1 className="text-2xl font-bold text-primary dark:text-black">Abelov IT Academy</h1>
               <p className="text-sm text-muted-foreground">{user?.email}</p>
             </div>
           </div>
@@ -214,6 +215,7 @@ export default function DashboardPage() {
                 </Button>
               </>
             )}
+            <ThemeToggle />
             <ProfileMenu />
           </div>
         </div>
@@ -291,7 +293,7 @@ export default function DashboardPage() {
 
                 <div className="space-y-2 mb-4 text-sm">
                   <p><span className="font-medium">Product:</span> {request.product_name}</p>
-                  <p><span className="font-medium">Batch / SKU:</span> {request.batch_sku}</p>
+                  <p><span className="font-medium">Name:</span> {request.entity_name || '-'}</p>
                   <p><span className="font-medium">Entry Date:</span> {new Date(request.entry_date).toLocaleDateString()}</p>
                 </div>
 
