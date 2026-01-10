@@ -16,10 +16,12 @@ COPY . .
 # Build arguments for Convex and Vite
 ARG CONVEX_DEPLOYMENT
 ARG VITE_CONVEX_URL
+ARG CONVEX_ACCESS_TOKEN
 
 # Set environment variables from build args
 ENV CONVEX_DEPLOYMENT=$CONVEX_DEPLOYMENT
 ENV VITE_CONVEX_URL=$VITE_CONVEX_URL
+ENV CONVEX_ACCESS_TOKEN=$CONVEX_ACCESS_TOKEN
 
 # Run the build command (includes "npx convex codegen")
 RUN npm run build
