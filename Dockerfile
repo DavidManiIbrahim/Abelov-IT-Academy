@@ -1,6 +1,6 @@
 FROM node:20-alpine AS builder
 
-# 👇 Declare build args FIRST
+#  Declare build args FIRST
 ARG CONVEX_DEPLOY_KEY
 ARG CONVEX_DEPLOYMENT
 ARG VITE_CONVEX_URL
@@ -28,7 +28,7 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
-EXPOSE 80
+EXPOSE 8080
 
 # Start Nginx
 CMD ["nginx", "-g", "daemon off;"]
